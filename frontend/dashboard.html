@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Dashboard</title>
+    </head>
+    <body>
+        <h1>Dashboard Pasien</h1>
+        <button id="logoutButton">Logout</button>
+        <hr />
+        <h3>Data Pasien</h3>
+        <pre id="patientData"></pre>
+
+        <script>
+            // === 1. Cek Token Saat Halaman Dibuka ===
+            const token = localStorage.getItem("jwt_token");
+            if (!token) {
+                // Jika tidak ada token, tendang kembali ke halaman login
+                alert("Anda harus login terlebih dahulu!");
+                window.location.href = "login.html";
+            }
+
+            // === 2. Fungsi untuk Mengambil Data Pasien ===
+            async function fetchPatients() {
+                const preEl = document.getElementById("patientData");
+                try {
+                    // Panggil API Gateway (bukan patient-service)
+                    // dan sertakan token di header
+                    const response = await fetch("http://localhost:5000/api/patients", {
+                        method: "GET",
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 422) {
+                            alert("Token Anda tidak valid atau kedaluwarsa. Silakan login kembali.");
+                            window.location.href = "login.html";
+                        }
+                        preEl.textContent = `Error: ${data.message}`;
+                    } else {
+                        // Berhasil! Tampilkan data
+                        preEl.textContent = JSON.stringify(data, null, 2);
+                    }
+                } catch (error) {
+                    preEl.textContent = "Error: Gagal menghubungi API Gateway.";
+                }
+            }
+
+            // === 3. Fungsi Logout ===
+            document.getElementById("logoutButton").addEventListener("click", () => {
+                localStorage.removeItem("jwt_token");
+                alert("Logout berhasil.");
+                window.location.href = "login.html";
+            });
+
+            // === 4. Jalankan fungsi ambil data saat halaman dimuat ===
+            fetchPatients();
+        </script>
+    </body>
+</html>

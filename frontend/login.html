@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+</head>
+<body>
+    <h2>Login Sistem Kesehatan</h2>
+    <form id="loginForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" value="admin"> <br/>
+        <label for="password">Password:</label>
+        <input type="password" id="password" value="password"> <br/>
+        <button type="submit">Login</button>
+    </form>
+    <p id="message"></p>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); // Mencegah form submit biasa
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const messageEl = document.getElementById('message');
+
+            try {
+                // Panggil API Gateway di port 5000
+                const response = await fetch('http://localhost:5000/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    messageEl.textContent = data.message;
+                } else {
+                    // BERHASIL! Simpan token di localStorage
+                    localStorage.setItem('jwt_token', data.access_token);
+                    messageEl.textContent = "Login berhasil! Mengarahkan...";
+                    // Pindahkan ke dashboard
+                    window.location.href = 'dashboard.html';
+                }
+            } catch (error) {
+                messageEl.textContent = "Error: Tidak bisa terhubung ke API Gateway.";
+            }
+        });
+    </script>
+</body>
+</html>
