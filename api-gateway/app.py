@@ -127,7 +127,7 @@ def proxy_record(path=""):
     
     if path:
         url = f"{url}/{path}"
-
+    print(f"Redirecting request to: {url}")
     try:
         response = requests.request(
             method=request.method,

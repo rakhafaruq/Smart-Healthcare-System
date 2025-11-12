@@ -10,7 +10,7 @@ class Config:
     DB_PORT = os.getenv('DB_PORT')
     DB_USER = os.getenv('DB_USER')
     DB_PASSWORD = os.getenv('DB_PASSWORD')
-    DB_NAME = os.getenv('DB_NAME_PATIENT') 
+    DB_NAME = os.getenv('DB_NAME_RECORD') 
 
     SQLALCHEMY_DATABASE_URI = (
         f"mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
