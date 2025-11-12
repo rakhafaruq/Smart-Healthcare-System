@@ -3,6 +3,7 @@ Flask-RESTful
 Flask-CORS
 Flask-SQLAlchemy
 Flask-JWT-Extended
-mysqlclient  
+mysql-connector-python
+mysqlclient
 python-dotenv 
 requests 

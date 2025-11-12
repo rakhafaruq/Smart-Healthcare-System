@@ -71,9 +71,12 @@ def proxy_patient(path=""):
 @app.route('/api/staff/<path:path>', methods=['GET', 'PUT', 'DELETE'])
 @jwt_required()
 def proxy_staff(path=""):
-    service_url = app.config['SERVICES']['staff']
-    url = f"{service_url}/v1/staff/{path}" # Asumsi staff service juga pakai /v1/staff
+    service_url = app.config['SERVICES']['staff']   
+    url = f"{service_url}/v1/staff" 
     
+    if path:
+        url = f"{url}/{path}"
+
     # (Kode proxy sama seperti di atas...)
     try:
         response = requests.request(
@@ -87,7 +90,56 @@ def proxy_staff(path=""):
     except requests.exceptions.ConnectionError:
         return jsonify({"message": "Staff Service tidak dapat dihubungi"}), 503
 
-# ... (Tambahkan proxy serupa untuk /api/appointments dan /api/records) ...
+# === 4. PROXY KE APPOINTMENT-SERVICE ===
+@app.route('/api/appointments', methods=['GET', 'POST'])
+@app.route('/api/appointments/<path:path>', methods=['GET', 'PUT', 'DELETE'])
+@jwt_required()
+def proxy_appointment(path=""):
+    service_url = app.config['SERVICES']['appointment']    
+    url = f"{service_url}/v1/appointments" 
+    
+    if path:
+        url = f"{url}/{path}"
+
+    try:
+        response = requests.request(
+            method=request.method,
+            url=url,
+            # Meneruskan semua header kecuali header Host, agar tidak ada konflik
+            headers={key: value for (key, value) in request.headers if key != 'Host'},
+            json=request.get_json(silent=True),
+            params=request.args
+        )
+        # Kembalikan respons dari service
+        return (response.content, response.status_code, response.headers.items())
+    
+    except requests.exceptions.ConnectionError:
+        return jsonify({"message": "Appointment Service tidak dapat dihubungi"}), 503
+
+
+# === 5. PROXY KE MEDICAL-RECORD-SERVICE ===
+@app.route('/api/records', methods=['GET', 'POST'])
+@app.route('/api/records/<path:path>', methods=['GET', 'PUT', 'DELETE'])
+@jwt_required()
+def proxy_record(path=""):
+    service_url = app.config['SERVICES']['record']
+    url = f"{service_url}/v1/records" 
+    
+    if path:
+        url = f"{url}/{path}"
+
+    try:
+        response = requests.request(
+            method=request.method,
+            url=url,
+            headers={key: value for (key, value) in request.headers if key != 'Host'},
+            json=request.get_json(silent=True),
+            params=request.args
+        )
+        return (response.content, response.status_code, response.headers.items())
+    
+    except requests.exceptions.ConnectionError:
+        return jsonify({"message": "Medical Record Service tidak dapat dihubungi"}), 503
 
 # === Entry Point ===
 if __name__ == '__main__':
